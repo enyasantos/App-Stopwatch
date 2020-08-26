@@ -24,7 +24,7 @@ class _HomeState extends State<Home> {
   int min = 0;
   int hou = 0;
 
-  var salt = new List();
+  var laps = new List();
 
   Color _hexToColor(String code) {
     return new Color(int.parse(code.substring(1, 7), radix: 16) + 0xFF000000);
@@ -37,7 +37,7 @@ class _HomeState extends State<Home> {
       min = 0;
       hou = 0;
       clock = "${formatTime(hou)}:${formatTime(min)}:${formatTime(sec)}";
-      salt = [];
+      laps = [];
     });
   }
 
@@ -50,9 +50,9 @@ class _HomeState extends State<Home> {
     return time.toString();
   }
 
-  void addSalt() {
+  void addLaps() {
     setState(() {
-      salt.add(clock);
+      laps.insert(0, clock);
     });
   }
 
@@ -175,7 +175,7 @@ class _HomeState extends State<Home> {
                   ),
                   FlatButton(
                     onPressed: () {
-                      addSalt();
+                      addLaps();
                     },
                     child: Icon(
                       Icons.add,
@@ -211,12 +211,12 @@ class _HomeState extends State<Home> {
                   physics: ClampingScrollPhysics(),
                   shrinkWrap: true,
                   scrollDirection: Axis.horizontal,
-                  itemCount: salt.length,
+                  itemCount: laps.length,
                   itemBuilder: (BuildContext context, int index) => Padding(
                     padding: EdgeInsets.symmetric(horizontal: 20.0),
                     child: RichText(
                       text: TextSpan(
-                        text: "Lap ${index + 1}\n",
+                        text: "Lap  ${laps.length - index}\n",
                         style: GoogleFonts.oswald(
                             textStyle: TextStyle(
                                 color: _hexToColor('#8F9294'),
@@ -225,7 +225,7 @@ class _HomeState extends State<Home> {
                         ),
                         children: <TextSpan>[
                           TextSpan(
-                              text: '${salt[index]}',
+                              text: '${laps[index]}',
                               style: GoogleFonts.oswald(
                                   textStyle: TextStyle(
                                     color: _hexToColor("#F5FAFE"),
