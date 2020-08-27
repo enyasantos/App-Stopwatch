@@ -15,8 +15,11 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+
+  int count = 0; //Saber quantas vezes foram clicados start e play
+
   Timer timer;
-  bool stop = false;
+  bool stop = true;
 
   String clock = "00:00:00";
 
@@ -30,15 +33,12 @@ class _HomeState extends State<Home> {
     return new Color(int.parse(code.substring(1, 7), radix: 16) + 0xFF000000);
   }
 
-  void resetTimer() {
-    stop = true;
-    setState(() {
-      sec = 0;
-      min = 0;
-      hou = 0;
-      clock = "${formatTime(hou)}:${formatTime(min)}:${formatTime(sec)}";
-      laps = [];
-    });
+  Paint _outerArc;
+
+  _HomeState() {
+    _outerArc = Paint()
+      ..color = _hexToColor('#0E0910')
+      ..strokeWidth = 8;
   }
 
   String formatTime(int time) {
@@ -50,10 +50,44 @@ class _HomeState extends State<Home> {
     return time.toString();
   }
 
+  void addLapsOrReset() {
+    if (stop && count == 1) {
+      resetTimer();
+    } else {
+      addLaps();
+    }
+  }
+
   void addLaps() {
     setState(() {
       laps.insert(0, clock);
     });
+  }
+
+  void resetTimer() {
+    stop = true;
+    setState(() {
+      sec = 0;
+      min = 0;
+      hou = 0;
+      clock = "${formatTime(hou)}:${formatTime(min)}:${formatTime(sec)}";
+      laps = [];
+    });
+  }
+
+  void startOrStopTimer() {
+    if (stop) {
+      startTimer();
+      count = 1;
+      setState(() {
+        stop = false;
+      });
+    } else {
+      stopTimer();
+      setState(() {
+        stop = true;
+      });
+    }
   }
 
   void startTimer() {
@@ -79,7 +113,6 @@ class _HomeState extends State<Home> {
   }
 
   void stopTimer() {
-    stop = true;
     timer.cancel();
   }
 
@@ -92,7 +125,7 @@ class _HomeState extends State<Home> {
     return Scaffold(
         backgroundColor: _hexToColor('#080509'),
         body: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(vertical: 80.0, horizontal: 10.0),
+          padding: EdgeInsets.only(top: 70.0, bottom: 10.0, left: 10.0, right: 10.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
@@ -110,6 +143,7 @@ class _HomeState extends State<Home> {
                   Container(
                     width: 220.0,
                     height: 220.0,
+                    margin: EdgeInsets.symmetric(vertical: 50.0),
                     decoration: BoxDecoration(
                       color: _hexToColor('#0E0910'),
                       shape: BoxShape.circle,
@@ -121,16 +155,9 @@ class _HomeState extends State<Home> {
                           offset: Offset(4, 4), // changes position of shadow
                         ),
                       ],
+                      border: Border.all(width: 5.0, color: _hexToColor('#5282F9'))
                     ),
                   ),
-                  Text("${clock}",
-                      style: GoogleFonts.oswald(
-                        textStyle: TextStyle(
-                          color: _hexToColor('#858585').withOpacity(0.04),
-                          fontSize: 80.0,
-                          fontFamily: 'Oswald',
-                        ),
-                      )),
                   Text("${clock}",
                       style: GoogleFonts.oswald(
                           textStyle: TextStyle(
@@ -145,11 +172,11 @@ class _HomeState extends State<Home> {
                 children: [
                   FlatButton(
                     onPressed: () {
-                      startTimer();
+                      startOrStopTimer();
                     },
                     child: Icon(
-                      Icons.play_arrow,
-                      size: 30.0,
+                      stop ? Icons.play_arrow : Icons.pause,
+                      size: 20.0,
                       color: _hexToColor('#F5FAFE'),
                     ),
                     shape: CircleBorder(
@@ -160,26 +187,11 @@ class _HomeState extends State<Home> {
                   ),
                   FlatButton(
                     onPressed: () {
-                      stopTimer();
+                      addLapsOrReset();
                     },
                     child: Icon(
-                      Icons.pause,
-                      size: 30.0,
-                      color: _hexToColor('#F5FAFE'),
-                    ),
-                    shape: CircleBorder(
-                      side: BorderSide(
-                        color: _hexToColor('#FA1B6F'),
-                      ),
-                    ),
-                  ),
-                  FlatButton(
-                    onPressed: () {
-                      addLaps();
-                    },
-                    child: Icon(
-                      Icons.add,
-                      size: 30.0,
+                      stop && count == 1 ? Icons.replay : Icons.add,
+                      size: 20.0,
                       color: _hexToColor('#F5FAFE'),
                     ),
                     shape: CircleBorder(
@@ -190,54 +202,38 @@ class _HomeState extends State<Home> {
                   ),
                 ],
               ),
-              FlatButton(
-                onPressed: () {
-                  resetTimer();
-                },
-                child: Icon(
-                  Icons.replay,
-                  size: 30.0,
-                  color: _hexToColor('#F5FAFE'),
-                ),
-                shape: CircleBorder(
-                  side: BorderSide(
-                    color: _hexToColor('#FA1B6F'),
-                  ),
-                ),
-              ),
-              SizedBox(
-                height: 200.0,
+              Padding(padding: EdgeInsets.only(top: 26.0),
+              child: SizedBox(
+                height: 50.0,
                 child: ListView.builder(
-                  physics: ClampingScrollPhysics(),
-                  shrinkWrap: true,
-                  scrollDirection: Axis.horizontal,
-                  itemCount: laps.length,
-                  itemBuilder: (BuildContext context, int index) => Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20.0),
-                    child: RichText(
-                      text: TextSpan(
-                        text: "Lap  ${laps.length - index}\n",
-                        style: GoogleFonts.oswald(
-                            textStyle: TextStyle(
-                                color: _hexToColor('#8F9294'),
-                                fontSize: 10.0,
-                                fontFamily: 'Montserrat')
+                    physics: ClampingScrollPhysics(),
+                    shrinkWrap: true,
+                    scrollDirection: Axis.horizontal,
+                    itemCount: laps.length,
+                    itemBuilder: (BuildContext context, int index) => Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20.0),
+                      child: RichText(
+                        text: TextSpan(
+                          text: "Lap  ${laps.length - index}\n",
+                          style: GoogleFonts.oswald(
+                              textStyle: TextStyle(
+                                  color: _hexToColor('#8F9294'),
+                                  fontSize: 10.0,
+                                  fontFamily: 'Montserrat')),
+                          children: <TextSpan>[
+                            TextSpan(
+                                text: '${laps[index]}',
+                                style: GoogleFonts.oswald(
+                                    textStyle: TextStyle(
+                                      color: _hexToColor("#F5FAFE"),
+                                      fontSize: 14.0,
+                                      fontFamily: 'Montserrat',
+                                    )))
+                          ],
                         ),
-                        children: <TextSpan>[
-                          TextSpan(
-                              text: '${laps[index]}',
-                              style: GoogleFonts.oswald(
-                                  textStyle: TextStyle(
-                                    color: _hexToColor("#F5FAFE"),
-                                    fontSize: 14.0,
-                                    fontFamily: 'Montserrat',
-                                  )))
-                        ],
                       ),
-                    ),
-                  )
-                ),
-              ),
+                    )),
+              ),)
             ],
           ),
         ));
