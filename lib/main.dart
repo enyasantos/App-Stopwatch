@@ -5,6 +5,7 @@ import 'dart:async';
 void main() {
   runApp(MaterialApp(
     title: 'Stopwatch',
+    debugShowCheckedModeBanner: false,
     home: Home(),
   ));
 }
@@ -70,6 +71,7 @@ class _HomeState extends State<Home> {
       sec = 0;
       min = 0;
       hou = 0;
+      count = 0;
       clock = "${formatTime(hou)}:${formatTime(min)}:${formatTime(sec)}";
       laps = [];
     });
@@ -98,10 +100,10 @@ class _HomeState extends State<Home> {
       else {
         setState(() {
           sec += 1;
-          if (sec >= 60) {
+          if (sec == 60) {
             min += 1;
             sec = 0;
-            if (min >= 60) {
+            if (min == 60) {
               hou += 1;
               min = 0;
             }
@@ -159,12 +161,12 @@ class _HomeState extends State<Home> {
                     ),
                   ),
                   Text("${clock}",
-                      style: GoogleFonts.oswald(
-                          textStyle: TextStyle(
-                        color: _hexToColor('#858585'),
-                        fontSize: 36.0,
-                        fontFamily: 'Oswald',
-                      ))),
+                          style: GoogleFonts.oswald(
+                              textStyle: TextStyle(
+                                color: _hexToColor('#858585'),
+                                fontSize: 36.0,
+                                fontFamily: 'Oswald',
+                              ))),
                 ],
               ),
               Row(
@@ -239,3 +241,4 @@ class _HomeState extends State<Home> {
         ));
   }
 }
+
